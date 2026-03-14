@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Peng AI — Weiqi Assistant</title>
+<title>Learn Go — Peng AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -41,9 +41,7 @@
     letter-spacing: -0.03em;
   }
 
-  .header h1 span {
-    color: #e8ff00;
-  }
+  .header h1 span { color: #e8ff00; }
 
   .header p {
     color: #666;
@@ -115,7 +113,7 @@
     margin-top: 1rem;
   }
 
-  input {
+  input[type="text"], input[type="password"] {
     flex: 1;
     background: #1a1a1a;
     border: 1px solid #2a2a2a;
@@ -168,7 +166,6 @@
     30% { transform: translateY(-8px); background: #e8ff00; }
   }
 
-  /* TRAIN PANEL */
   .train-btn {
     background: transparent;
     border: 1px solid #2a2a2a;
@@ -198,10 +195,6 @@
     color: #e8ff00;
   }
 
-  .train-panel input {
-    background: #111;
-  }
-
   select {
     background: #111;
     border: 1px solid #2a2a2a;
@@ -214,7 +207,7 @@
     width: 100%;
   }
 
-  .unbekannte-liste {
+  .unknown-list {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -222,7 +215,7 @@
     overflow-y: auto;
   }
 
-  .unbekannte-item {
+  .unknown-item {
     background: #111;
     border: 1px solid #2a2a2a;
     border-radius: 8px;
@@ -232,72 +225,110 @@
     transition: border-color 0.2s;
   }
 
-  .unbekannte-item:hover { border-color: #e8ff00; color: #e8ff00; }
-  .unbekannte-item.selected { border-color: #e8ff00; color: #e8ff00; }
+  .unknown-item:hover { border-color: #e8ff00; color: #e8ff00; }
+  .unknown-item.selected { border-color: #e8ff00; color: #e8ff00; }
+
+  .suggested-questions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .suggestion {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 20px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .suggestion:hover {
+    border-color: #e8ff00;
+    color: #e8ff00;
+    background: transparent;
+    transform: none;
+  }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <h1>Peng <span>AI</span> 围棋</h1>
-    <p>Dein Weiqi-Assistent — powered by ppm</p>
+    <h1>Learn Go — <span>Peng AI</span> 围棋</h1>
+    <p>Your personal Go (Weiqi) assistant — powered by ppm</p>
   </div>
 
   <div class="chat-box" id="chatBox">
     <div class="message ai">
       <div class="avatar ai">🤖</div>
-      <div class="bubble">👋 Hallo! Ich bin Peng AI. Frag mich alles über Weiqi — Regeln, Strategien, Züge!</div>
+      <div class="bubble">👋 Hello! I'm Peng AI, your Go assistant. Ask me anything about rules, strategies, or moves — I'll help you improve! 围棋</div>
     </div>
   </div>
 
+  <div class="suggested-questions" id="suggestions">
+    <div class="suggestion" onclick="askSuggestion('What is Atari?')">What is Atari?</div>
+    <div class="suggestion" onclick="askSuggestion('How do I win?')">How do I win?</div>
+    <div class="suggestion" onclick="askSuggestion('I am a beginner')">I am a beginner</div>
+    <div class="suggestion" onclick="askSuggestion('What is Ko?')">What is Ko?</div>
+    <div class="suggestion" onclick="askSuggestion('What are liberties?')">What are liberties?</div>
+  </div>
+
   <div class="input-row">
-    <input type="text" id="frageInput" placeholder="Stelle eine Frage über Weiqi..." />
-    <button id="sendenBtn" onclick="senden()">Senden</button>
+    <input type="text" id="questionInput" placeholder="Ask a question about Go..." />
+    <button id="sendBtn" onclick="send()">Send</button>
   </div>
 
   <button class="train-btn" onclick="toggleTrain()">🔒 Admin Training</button>
 
   <div class="train-panel" id="trainPanel">
     <h3>🧠 AI Training</h3>
-    <input type="password" id="passwortInput" placeholder="Passwort..." />
-    <button onclick="ladeUnbekannte()">Unbekannte Fragen laden</button>
-    <div class="unbekannte-liste" id="unbekannteListe"></div>
+    <input type="password" id="passwordInput" placeholder="Password..." />
+    <button onclick="loadUnknown()">Load Unknown Questions</button>
+    <div class="unknown-list" id="unknownList"></div>
     <select id="intentSelect">
-      <option value="">— Thema wählen —</option>
-      <option value="anfänger">anfänger</option>
+      <option value="">— Select topic —</option>
+      <option value="beginner">beginner</option>
       <option value="atari">atari</option>
-      <option value="freiheiten">freiheiten</option>
+      <option value="liberties">liberties</option>
       <option value="captures">captures</option>
       <option value="opening">opening</option>
-      <option value="ecken">ecken</option>
-      <option value="gruppen">gruppen</option>
-      <option value="leben_tod">leben_tod</option>
+      <option value="corners">corners</option>
+      <option value="groups">groups</option>
+      <option value="life_death">life_death</option>
       <option value="ko">ko</option>
-      <option value="punkte">punkte</option>
-      <option value="territorium">territorium</option>
+      <option value="scoring">scoring</option>
+      <option value="territory">territory</option>
       <option value="joseki">joseki</option>
       <option value="tesuji">tesuji</option>
       <option value="sente">sente</option>
-      <option value="begrüßung">begrüßung</option>
+      <option value="greeting">greeting</option>
     </select>
-    <button onclick="trainieren()">✅ Trainieren</button>
+    <button onclick="trainAI()">✅ Train</button>
     <div id="trainStatus" style="font-size:0.85rem; color:#666;"></div>
   </div>
 </div>
 
 <script>
-  let gewählteFrage = null;
+  let selectedQuestion = null;
 
-  document.getElementById("frageInput").addEventListener("keydown", e => {
-    if (e.key === "Enter") senden();
+  document.getElementById("questionInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") send();
   });
 
-  function addMessage(text, typ) {
+  function askSuggestion(text) {
+    document.getElementById("questionInput").value = text;
+    send();
+  }
+
+  function addMessage(text, type) {
     const box = document.getElementById("chatBox");
     const div = document.createElement("div");
-    div.className = `message ${typ}`;
+    div.className = `message ${type}`;
     div.innerHTML = `
-      <div class="avatar ${typ}">${typ === "ai" ? "🤖" : "👤"}</div>
+      <div class="avatar ${type}">${type === "ai" ? "🤖" : "👤"}</div>
       <div class="bubble">${text}</div>
     `;
     box.appendChild(div);
@@ -317,13 +348,13 @@
     box.scrollTop = box.scrollHeight;
   }
 
-  async function senden() {
-    const input = document.getElementById("frageInput");
-    const btn = document.getElementById("sendenBtn");
-    const frage = input.value.trim();
-    if (!frage) return;
+  async function send() {
+    const input = document.getElementById("questionInput");
+    const btn = document.getElementById("sendBtn");
+    const question = input.value.trim();
+    if (!question) return;
 
-    addMessage(frage, "user");
+    addMessage(question, "user");
     input.value = "";
     btn.disabled = true;
     addTyping();
@@ -331,55 +362,54 @@
     const res = await fetch("/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ frage })
+      body: JSON.stringify({ question })
     });
 
-    const daten = await res.json();
+    const data = await res.json();
     document.getElementById("typing")?.remove();
-    addMessage(daten.antwort, "ai");
+    addMessage(data.answer, "ai");
     btn.disabled = false;
     input.focus();
   }
 
   function toggleTrain() {
-    const panel = document.getElementById("trainPanel");
-    panel.classList.toggle("open");
+    document.getElementById("trainPanel").classList.toggle("open");
   }
 
-  async function ladeUnbekannte() {
-    const passwort = document.getElementById("passwortInput").value;
-    if (!passwort) { alert("Passwort eingeben!"); return; }
+  async function loadUnknown() {
+    const password = document.getElementById("passwordInput").value;
+    if (!password) { alert("Enter password first!"); return; }
 
-    const res = await fetch("/unbekannt");
-    const daten = await res.json();
-    const liste = document.getElementById("unbekannteListe");
-    liste.innerHTML = "";
+    const res = await fetch("/unknown");
+    const data = await res.json();
+    const list = document.getElementById("unknownList");
+    list.innerHTML = "";
 
-    if (daten.length === 0) {
-      liste.innerHTML = "<div style='color:#666; font-size:0.85rem;'>Keine unbekannten Fragen 👍</div>";
+    if (data.length === 0) {
+      list.innerHTML = "<div style='color:#666; font-size:0.85rem;'>No unknown questions 👍</div>";
       return;
     }
 
-    daten.forEach(frage => {
+    data.forEach(question => {
       const item = document.createElement("div");
-      item.className = "unbekannte-item";
-      item.textContent = frage;
+      item.className = "unknown-item";
+      item.textContent = question;
       item.onclick = () => {
-        document.querySelectorAll(".unbekannte-item").forEach(i => i.classList.remove("selected"));
+        document.querySelectorAll(".unknown-item").forEach(i => i.classList.remove("selected"));
         item.classList.add("selected");
-        gewählteFrage = frage;
+        selectedQuestion = question;
       };
-      liste.appendChild(item);
+      list.appendChild(item);
     });
   }
 
-  async function trainieren() {
-    const passwort = document.getElementById("passwortInput").value;
+  async function trainAI() {
+    const password = document.getElementById("passwordInput").value;
     const intent = document.getElementById("intentSelect").value;
     const status = document.getElementById("trainStatus");
 
-    if (!passwort || !gewählteFrage || !intent) {
-      status.textContent = "❌ Passwort, Frage und Thema wählen!";
+    if (!password || !selectedQuestion || !intent) {
+      status.textContent = "❌ Enter password, select a question and a topic!";
       status.style.color = "#ff4444";
       return;
     }
@@ -387,17 +417,17 @@
     const res = await fetch("/train", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ passwort, frage: gewählteFrage, intent })
+      body: JSON.stringify({ password, question: selectedQuestion, intent })
     });
 
-    const daten = await res.json();
-    if (daten.erfolg) {
-      status.textContent = `✅ Gelernt! Modell hat jetzt ${daten.beispiele} Beispiele.`;
+    const data = await res.json();
+    if (data.success) {
+      status.textContent = `✅ Learned! Model now has ${data.examples} examples.`;
       status.style.color = "#e8ff00";
-      gewählteFrage = null;
-      ladeUnbekannte();
+      selectedQuestion = null;
+      loadUnknown();
     } else {
-      status.textContent = `❌ ${daten.fehler}`;
+      status.textContent = `❌ ${data.error}`;
       status.style.color = "#ff4444";
     }
   }
